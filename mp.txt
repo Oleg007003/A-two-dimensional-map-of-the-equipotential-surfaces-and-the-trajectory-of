@@ -1,0 +1,126 @@
+import pylab
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib import cm
+import numpy
+
+plt = pylab
+
+N = 0
+k = 9
+kX = []
+kY = []
+kQ = []
+
+
+def makeData():
+    x = numpy.arange(-10, 10, 0.1)
+    y = numpy.arange(-10, 10, 0.1)
+    xgrid, ygrid = numpy.meshgrid(x, y)
+    zgrid = 0.0
+    for i in range(0, N):
+        zgrid = zgrid + k * kQ[i] / (((((xgrid - kX[i]) ** 2) + (ygrid - kY[i]) ** 2) + 0.1) ** 0.5)
+    return xgrid, ygrid, zgrid
+
+
+print("Enter the number of points:")
+N = int(input())
+for i in range(0, N):
+    print("Enter the coordinates and charge of the", i + 1, "point:")
+    a, b, c = map(float, input().split())
+    kX.append(a)
+    kY.append(b)
+    kQ.append(c)
+
+x, y, z = makeData()
+
+fig = pylab.figure()
+axes = Axes3D(fig)
+axes.plot_surface(x, y, z, rstride=3, cstride=3, cmap=cm.jet)
+axes.set_xlabel('x')
+axes.set_ylabel('y')
+axes.set_zlabel('Potential(φ)')
+axes.set_title("Three-dimensional picture of potential(φ)")
+pylab.show()
+
+print("Enter the potential value (φ=const) and wait a bit:")
+P = int(input())
+
+mQ = numpy.zeros((2000, 2000))
+for tx in range(-1000, 1000):
+    for ty in range(-1000, 1000):
+        zg = 0.0
+        for i in range(0, N):
+            zg = zg + k * kQ[i] / (((((float(tx) / 100 - kX[i]) ** 2) + (float(ty) / 100 - kY[i]) ** 2) + 0.1) ** 0.5)
+        if abs(P - zg) < 10:
+            # print(tx,ty)
+            mQ[ty + 1000, tx + 1000] = 150
+        else:
+            mQ[ty + 1000, tx + 1000] = 0
+        # mQ[ty+1000,tx+1000]=-(P-zg)
+
+fig.savefig('Задание 1')
+pylab.pcolormesh(mQ, cmap="plasma", )
+
+print("Enter the coordinates, charge, and mass of the charge(x, y, q0, m):")
+xx, yy, q0, m = map(float, input().split())
+
+tX = [xx * 100 + 1000]
+tY = [yy * 100 + 1000]
+E = []
+t = []
+mt = 0.0
+aX = 0.0
+vX = 0.0
+aY = 0.0
+vY = 0.0
+dt = 0.005
+
+for i in range(0, 100000):
+
+    xx = xx + aX * (dt ** 2) / 2
+    yy = yy + aY * (dt ** 2) / 2
+
+    if xx > 10:
+        tX.append(2000)
+        if yy > 10:
+            tY.append(2000)
+        else:
+            tY.append(yy * 100 + 1000)
+        break
+    if yy > 10:
+        tY.append(2000)
+        tX.append(xx * 100 + 1000)
+        break
+
+    if xx < -10:
+        tX.append(0)
+        if yy < -10:
+            tY.append(0)
+        else:
+            tY.append(yy * 100 + 1000)
+        break
+    if yy < -10:
+        tX.append(xx * 100 + 1000)
+        tY.append(0)
+        break
+
+    mx = xx * 100 + 1000
+    my = yy * 100 + 1000
+    tX.append(mx)
+    tY.append(my)
+    aX = 0.0
+    aY = 0.0
+    for j in range(0, N):
+        aX = aX - (k * q0 / m) * (kQ[j] * (kX[j] - xx)) / (
+                    ((xx - kX[j]) ** 2 + (yy - kY[j]) ** 2 + 0.000001) ** (3 / 2))
+        aY = aY - (k * q0 / m) * (kQ[j] * (kY[j] - yy)) / (
+                    ((xx - kX[j]) ** 2 + (yy - kY[j]) ** 2 + 0.000001) ** (3 / 2))
+    vX = vX + aX * dt
+    vY = vY + aY * dt
+    # E=(m*(vX**2+vY**2)/2)+q0*kQ[]
+
+print("A two-dimensional map of the equipotential surfaces and the trajectory of:")
+# plt.plot(tX, tY,'--r')
+plt.savefig('Задание 2-3')
+plt.show()
