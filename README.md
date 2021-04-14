@@ -1,2 +1,1 @@
-
-The code is in mp.txt, there are also screenshots as examples of work
+Так как проект нужно было сдавать в виде txt, то и тут я его оставляю в таком же формате.
